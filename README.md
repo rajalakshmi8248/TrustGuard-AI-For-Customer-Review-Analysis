@@ -1,59 +1,105 @@
-## Title of the Project
-Small description about the project like one below
-The integration of a chatbot within a hostel booking system, aimed at streamlining the reservation process for students and improving the overall user experience.
+# Trust Guard AI - Customer Review Analysis System
 
-## About
-<!--Detailed Description about the project-->
-Tailored Chatbot for Hostel Booking System is a project designed to integrate a chatbot that leverages advanced natural language processing techniques to understand and respond to user queries to the hostel booking system. Traditional hostel booking processes are often time-consuming and involve manual searches and extensive communication with hostel staff. This project seeks to overcome these challenges by creating an easy-to-use chatbot interface that assists students in addressing inquiries.
+## Overview
+Trust Guard AI is an intelligent AI-driven system for analyzing and validating online customer reviews using Natural Language Processing (NLP) and Machine Learning techniques.
+
+The system performs comprehensive analysis of product/service reviews to detect sentiment, identify potentially fake reviews, and calculate a trust score for each review.
 
 ## Features
-<!--List the features of the project as shown below-->
-- Implements advance neural network method.
-- A framework based application for deployment purpose.
-- High scalability.
-- Less time complexity.
-- A specific scope of Chatbot response model, using json data format.
 
-## Requirements
-<!--List the requirements of the project as shown below-->
-* Operating System: Requires a 64-bit OS (Windows 10 or Ubuntu) for compatibility with deep learning frameworks.
-* Development Environment: Python 3.6 or later is necessary for coding the sign language detection system.
-* Deep Learning Frameworks: TensorFlow for model training, MediaPipe for hand gesture recognition.
-* Image Processing Libraries: OpenCV is essential for efficient image processing and real-time hand gesture recognition.
-* Version Control: Implementation of Git for collaborative development and effective code management.
-* IDE: Use of VSCode as the Integrated Development Environment for coding, debugging, and version control integration.
-* Additional Dependencies: Includes scikit-learn, TensorFlow (versions 2.4.1), TensorFlow GPU, OpenCV, and Mediapipe for deep learning tasks.
+- **Sentiment Analysis**: Uses TextBlob to analyze polarity and subjectivity of reviews
+- **Fake Review Detection**: Multi-feature algorithm that identifies suspicious reviews based on:
+  - Text length and word count
+  - All-caps spam indicators
+  - Extreme subjectivity scores
+  - Rating-sentiment misalignment
+  - Suspicious patterns
+- **Trust Score Calculation**: Generates a 0-100 trust score based on multiple factors
+- **Visual Analytics**: Interactive dashboards with charts and statistics
+- **Easy Deployment**: Streamlit-based web application
 
-## System Architecture
-<!--Embed the system architecture diagram as shown below-->
+## Technology Stack
 
-![Screenshot 2023-11-25 133637](https://github.com/<<yourusername>>/Hand-Gesture-Recognition-System/assets/75235455/a60c11f3-0a11-47fb-ac89-755d5f45c995)
+- **Framework**: Streamlit
+- **Data Processing**: Pandas, NumPy
+- **NLP**: TextBlob, Scikit-learn
+- **Visualization**: Matplotlib, Seaborn
+- **Python**: 3.8+
 
+## Installation
 
-## Output
+### Local Setup
 
-<!--Embed the Output picture at respective places as shown below as shown below-->
-#### Output1 - Name of the output
+```bash
+# Clone the repository
+git clone https://github.com/rajalakshmi8248/TrustGuard-AI-For-Customer-Review-Analysis.git
+cd TrustGuard-AI-For-Customer-Review-Analysis
 
-![Screenshot 2023-11-25 134037](https://github.com/<<yourusername>>/Hand-Gesture-Recognition-System/assets/75235455/8c2b6b5c-5ed2-4ec4-b18e-5b6625402c16)
+# Install dependencies
+pip install -r requirements.txt
 
-#### Output2 - Name of the output
-![Screenshot 2023-11-25 134253](https://github.com/<<yourusername>>/Hand-Gesture-Recognition-System/assets/75235455/5e05c981-05ca-4aaa-aea2-d918dcf25cb7)
+# Run the application
+streamlit run app.py
+```
 
-Detection Accuracy: 96.7%
-Note: These metrics can be customized based on your actual performance evaluations.
+The application will open at `http://localhost:8501`
 
+### Cloud Deployment (Streamlit Cloud - Recommended)
 
-## Results and Impact
-<!--Give the results and impact as shown below-->
-The Sign Language Detection System enhances accessibility for individuals with hearing and speech impairments, providing a valuable tool for inclusive communication. The project's integration of computer vision and deep learning showcases its potential for intuitive and interactive human-computer interaction.
+1. Create a GitHub account and fork this repository
+2. Go to [Streamlit Cloud](https://streamlit.io/cloud)
+3. Sign in with GitHub
+4. Click "New app"
+5. Select your repository
+6. Set main file as `app.py`
+7. Click "Deploy"
 
-This project serves as a foundation for future developments in assistive technologies and contributes to creating a more inclusive and accessible digital environment.
+## Usage
 
-## Articles published / References
-1. N. S. Gupta, S. K. Rout, S. Barik, R. R. Kalangi, and B. Swampa, “Enhancing Heart Disease Prediction Accuracy Through Hybrid Machine Learning Methods ”, EAI Endorsed Trans IoT, vol. 10, Mar. 2024.
-2. A. A. BIN ZAINUDDIN, “Enhancing IoT Security: A Synergy of Machine Learning, Artificial Intelligence, and Blockchain”, Data Science Insights, vol. 2, no. 1, Feb. 2024.
+1. **Home Page**: Introduction and feature overview
+2. **Upload & Analyze**: Upload CSV file with columns `review_text` and `rating`
+3. **Dashboard**: View statistics and visualizations
+4. **Detailed Analysis**: Filter and examine individual reviews
+5. **About**: Project information
 
+## CSV Format
 
+Upload a CSV file with the following structure:
 
+```
+review_text,rating
+"Great product, very satisfied!",5
+"Poor quality, waste of money",1
+```
 
+## Output Metrics
+
+- **Sentiment**: Positive, Negative, or Neutral
+- **Polarity Score**: -1.0 to 1.0 (negative to positive)
+- **Subjectivity Score**: 0.0 to 1.0 (objective to subjective)
+- **Fake Score**: 0.0 to 1.0 (likelihood of being fake)
+- **Trust Score**: 0-100 (overall trustworthiness)
+
+## Project Structure
+
+```
+trust-guard-ai/
+├── app.py              # Main Streamlit application
+├── requirements.txt    # Python dependencies
+└── README.md          # Project documentation
+```
+
+## Author
+
+Developed by: Saveetha AI Student
+Institution: Saveetha AI
+
+## License
+
+This project is licensed under the GPL-3.0 License - see the LICENSE.txt file for details.
+
+## Acknowledgments
+
+- TextBlob for NLP capabilities
+- Streamlit for web framework
+- Scikit-learn for machine learning
