@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 from textblob import TextBlob
 import re
 
@@ -18,24 +16,20 @@ def get_text_column(df):
     text_cols = ['review', 'text', 'review_text', 'comment', 'feedback', 'description', 'body', 'message']
     cols_lower = {col.lower(): col for col in df.columns}
     
-    # First try exact matches (case-insensitive)
     for text_col in text_cols:
         if text_col in cols_lower:
             return cols_lower[text_col]
     
-    # Then try partial matches for 'review' or 'text' in column names
     for col in df.columns:
         col_lower = col.lower()
         if 'review' in col_lower and df[col].dtype == 'object':
             return col
     
-    # Try 'text' in column names
     for col in df.columns:
         col_lower = col.lower()
         if 'text' in col_lower and df[col].dtype == 'object':
             return col
     
-    # If no common name found, return first text column
     for col in df.columns:
         if df[col].dtype == 'object' and col.lower() not in ['rating', 'rate', 'score', 'name', 'user']:
             return col
@@ -47,12 +41,10 @@ def get_rating_column(df):
     rating_cols = ['rating', 'rate', 'score', 'stars', 'overall']
     cols_lower = {col.lower(): col for col in df.columns}
     
-    # First try exact matches (case-insensitive)
     for rating_col in rating_cols:
         if rating_col in cols_lower:
             return cols_lower[rating_col]
     
-    # Then try partial matches
     for col in df.columns:
         col_lower = col.lower()
         if 'rating' in col_lower and df[col].dtype in ['int64', 'float64']:
@@ -63,7 +55,6 @@ def get_rating_column(df):
         if 'overall' in col_lower and df[col].dtype in ['int64', 'float64']:
             return col
     
-    # If no common name found, return first numeric column
     for col in df.columns:
         if df[col].dtype in ['int64', 'float64']:
             return col
@@ -160,6 +151,7 @@ elif page == 'Dashboard':
         df = st.session_state.uploaded_data
         text_col = st.session_state.text_col or 'text'
         rating_col = st.session_state.rating_col or 'rating'
+        
         col1, col2, col3 = st.columns(3)
         with col1:
             st.metric('Total Reviews', len(df))
@@ -167,24 +159,26 @@ elif page == 'Dashboard':
             st.metric('Avg Trust Score', f"{df['trust_score'].mean():.2f}")
         with col3:
             st.metric('Fake Reviews', df['is_fake'].sum())
-        try:
-            fig, axes = plt.subplots(2, 2, figsize=(12, 8))
-            df['sentiment'].value_counts().plot(kind='bar', ax=axes[0, 0])
-            axes[0, 0].set_title('Sentiment Distribution')
-            axes[0, 1].hist(df['trust_score'], bins=10)
-            axes[0, 1].set_title('Trust Score Distribution')
-            if rating_col in df.columns:
-                axes[1, 0].scatter(df[rating_col], df['trust_score'])
-                axes[1, 0].set_title(f'{rating_col} vs Trust Score')
-            else:
-                axes[1, 0].text(0.5, 0.5, 'Rating column not available', ha='center', va='center')
-                axes[1, 0].set_title('Rating vs Trust Score')
-            axes[1, 1].hist(df['polarity'], bins=20)
-            axes[1, 1].set_title('Polarity Distribution')
-            plt.tight_layout()
-            st.pyplot(fig)
-        except Exception as e:
-            st.error(f'Visualization error: {str(e)}')
+        
+        # Sentiment Distribution
+        st.subheader('Sentiment Distribution')
+        sentiment_counts = df['sentiment'].value_counts()
+        st.bar_chart(sentiment_counts)
+        
+        # Trust Score Distribution  
+        st.subheader('Trust Score Distribution')
+        st.bar_chart(pd.DataFrame(pd.cut(df['trust_score'], bins=10).value_counts()).sort_index())
+        
+        # Rating vs Trust Score (if rating column exists)
+        if rating_col in df.columns:
+            st.subheader(f'{rating_col} vs Trust Score')
+            scatter_data = df[[rating_col, 'trust_score']].copy()
+            scatter_data.columns = [rating_col, 'Trust Score']
+            st.scatter_chart(scatter_data, x=rating_col, y='Trust Score', size=100)
+        
+        # Polarity Distribution
+        st.subheader('Polarity Distribution')
+        st.bar_chart(pd.DataFrame(pd.cut(df['polarity'], bins=10).value_counts()).sort_index())
     else:
         st.warning('Please upload data first!')
 
