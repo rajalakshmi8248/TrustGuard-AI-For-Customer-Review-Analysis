@@ -148,8 +148,6 @@ elif page == 'Dashboard':
     st.title('Dashboard')
     if st.session_state.uploaded_data is not None:
         df = st.session_state.uploaded_data
-        text_col = st.session_state.text_col or 'text'
-        rating_col = st.session_state.rating_col or 'rating'
         
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -159,26 +157,16 @@ elif page == 'Dashboard':
         with col3:
             st.metric('Fake Reviews', df['is_fake'].sum())
         
-        # Sentiment Distribution
         st.subheader('Sentiment Distribution')
-        sentiment_counts = df['sentiment'].value_counts()
-        st.bar_chart(sentiment_counts)
+        st.bar_chart(df['sentiment'].value_counts())
         
-        # Trust Score Distribution  
-        st.subheader('Trust Score Distribution')
-        trust_bins = pd.cut(df['trust_score'], bins=5).value_counts().sort_index()
-        st.bar_chart(trust_bins)
+        st.subheader('Trust Score by Sentiment')
+        trust_by_sentiment = df.groupby('sentiment')['trust_score'].mean()
+        st.bar_chart(trust_by_sentiment)
         
-        # Polarity Distribution
-        st.subheader('Polarity Distribution')
-        polarity_bins = pd.cut(df['polarity'], bins=5).value_counts().sort_index()
-        st.bar_chart(polarity_bins)
-        
-        # Fake Review Distribution
-        st.subheader('Fake Review Count')
-        fake_counts = df['is_fake'].value_counts()
-        fake_data = pd.DataFrame({'Category': ['Authentic', 'Suspicious'], 'Count': [fake_counts[False] if False in fake_counts.index else 0, fake_counts[True] if True in fake_counts.index else 0]})
-        st.bar_chart(fake_data.set_index('Category'))
+        st.subheader('Fake Review Distribution')
+        fake_counts = pd.Series({'Authentic': (~df['is_fake']).sum(), 'Suspicious': df['is_fake'].sum()})
+        st.bar_chart(fake_counts)
     else:
         st.warning('Please upload data first!')
 
