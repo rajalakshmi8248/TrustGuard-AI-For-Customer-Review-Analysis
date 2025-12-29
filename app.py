@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 from textblob import TextBlob
 import re
 
@@ -167,18 +166,19 @@ elif page == 'Dashboard':
         
         # Trust Score Distribution  
         st.subheader('Trust Score Distribution')
-        st.bar_chart(pd.DataFrame(pd.cut(df['trust_score'], bins=10).value_counts()).sort_index())
-        
-        # Rating vs Trust Score (if rating column exists)
-        if rating_col in df.columns:
-            st.subheader(f'{rating_col} vs Trust Score')
-            scatter_data = df[[rating_col, 'trust_score']].copy()
-            scatter_data.columns = [rating_col, 'Trust Score']
-            st.scatter_chart(scatter_data, x=rating_col, y='Trust Score', size=100)
+        trust_bins = pd.cut(df['trust_score'], bins=5).value_counts().sort_index()
+        st.bar_chart(trust_bins)
         
         # Polarity Distribution
         st.subheader('Polarity Distribution')
-        st.bar_chart(pd.DataFrame(pd.cut(df['polarity'], bins=10).value_counts()).sort_index())
+        polarity_bins = pd.cut(df['polarity'], bins=5).value_counts().sort_index()
+        st.bar_chart(polarity_bins)
+        
+        # Fake Review Distribution
+        st.subheader('Fake Review Count')
+        fake_counts = df['is_fake'].value_counts()
+        fake_data = pd.DataFrame({'Category': ['Authentic', 'Suspicious'], 'Count': [fake_counts[False] if False in fake_counts.index else 0, fake_counts[True] if True in fake_counts.index else 0]})
+        st.bar_chart(fake_data.set_index('Category'))
     else:
         st.warning('Please upload data first!')
 
