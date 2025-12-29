@@ -13,15 +13,15 @@ if 'uploaded_data' not in st.session_state:
 
 def get_text_column(df):
     """Find text column - tries common names"""
-    text_cols = ['review_text', 'review', 'text', 'comment', 'feedback', 'description']
+    text_cols = ['review', 'text', 'review_text', 'comment', 'feedback', 'description', 'body']
     for col in text_cols:
         if col in df.columns:
             return col
     # If no common name found, return first text column
     for col in df.columns:
-        if df[col].dtype == 'object' and col != 'rating':
+        if df[col].dtype == 'object' and col.lower() not in ['rating', 'rate', 'score']:
             return col
-    raise ValueError('No text column found')
+    raise ValueError(f'No text column found. Columns: {list(df.columns)}')
 
 def get_rating_column(df):
     """Find rating column - tries common names"""
@@ -33,7 +33,7 @@ def get_rating_column(df):
     for col in df.columns:
         if df[col].dtype in ['int64', 'float64']:
             return col
-    raise ValueError('No rating column found')
+    raise ValueError(f'No rating column found. Columns: {list(df.columns)}')
 
 def preprocess_text(text):
     text = str(text).lower()
@@ -107,9 +107,10 @@ elif page == 'Upload & Analyze':
     if uploaded_file:
         try:
             df = pd.read_csv(uploaded_file)
+            st.write(f'CSV Columns found: {list(df.columns)}')
             text_col = get_text_column(df)
             rating_col = get_rating_column(df)
-            st.write(f'Found text column: {text_col}, rating column: {rating_col}')
+            st.write(f'Using text column: {text_col}, rating column: {rating_col}')
             st.write(f'Loaded {len(df)} reviews')
             df = analyze_reviews(df, text_col, rating_col)
             st.session_state.uploaded_data = df
