@@ -10,6 +10,8 @@ st.set_page_config(page_title='Trust Guard AI', layout='wide')
 
 if 'uploaded_data' not in st.session_state:
     st.session_state.uploaded_data = None
+    st.session_state.text_col = None
+    st.session_state.rating_col = None
 
 def get_text_column(df):
     """Find text column - tries common names with case-insensitive matching"""
@@ -156,7 +158,8 @@ elif page == 'Dashboard':
     st.title('Dashboard')
     if st.session_state.uploaded_data is not None:
         df = st.session_state.uploaded_data
-        rating_col = st.session_state.get('rating_col', 'rating')
+        text_col = st.session_state.text_col or 'text'
+        rating_col = st.session_state.rating_col or 'rating'
         col1, col2, col3 = st.columns(3)
         with col1:
             st.metric('Total Reviews', len(df))
@@ -170,8 +173,12 @@ elif page == 'Dashboard':
             axes[0, 0].set_title('Sentiment Distribution')
             axes[0, 1].hist(df['trust_score'], bins=10)
             axes[0, 1].set_title('Trust Score Distribution')
-            axes[1, 0].scatter(df[rating_col], df['trust_score'])
-            axes[1, 0].set_title(f'{rating_col} vs Trust Score')
+            if rating_col in df.columns:
+                axes[1, 0].scatter(df[rating_col], df['trust_score'])
+                axes[1, 0].set_title(f'{rating_col} vs Trust Score')
+            else:
+                axes[1, 0].text(0.5, 0.5, 'Rating column not available', ha='center', va='center')
+                axes[1, 0].set_title('Rating vs Trust Score')
             axes[1, 1].hist(df['polarity'], bins=20)
             axes[1, 1].set_title('Polarity Distribution')
             plt.tight_layout()
