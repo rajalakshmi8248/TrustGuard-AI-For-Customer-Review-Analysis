@@ -27,7 +27,8 @@ def get_sentiment_label(polarity):
 
 def detect_fake_review(row):
     fake_score = 0
-    if len(row['cleaned_text'].split()) < 10:
+    text_words = len(row['cleaned_text'].split())
+    if text_words < 10:
         fake_score += 0.2
     if row['polarity'] == 0:
         fake_score += 0.15
@@ -46,8 +47,6 @@ def calculate_trust_score(row):
         trust_score -= 10
     if not row['is_fake']:
         trust_score += 15
-    if (row['rating'] >= 4 and row['sentiment'] == 'Positive') or (row['rating'] <= 2 and row['sentiment'] == 'Negative'):
-        trust_score += 10
     return max(0, min(trust_score, 100))
 
 def analyze_reviews(df):
@@ -65,8 +64,8 @@ page = st.sidebar.radio('Navigation', ['Home', 'Upload & Analyze', 'Dashboard', 
 if page == 'Home':
     st.title('Trust Guard AI')
     st.subheader('Customer Review Analysis System')
-    st.write('Welcome to Trust Guard AI')
-    st.info('Features: Sentiment Analysis, Fake Detection, Trust Scoring')
+    st.write('Welcome to Trust Guard AI, an intelligent system for analyzing and validating customer reviews.')
+    st.info('Features: Sentiment Analysis, Fake Review Detection, Trust Scoring')
 
 elif page == 'Upload & Analyze':
     st.title('Upload & Analyze Reviews')
@@ -77,7 +76,7 @@ elif page == 'Upload & Analyze':
         df = analyze_reviews(df)
         st.session_state.uploaded_data = df
         st.success('Analysis complete!')
-        st.dataframe(df)
+        st.dataframe(df[['review_text', 'rating', 'sentiment', 'trust_score']])
 
 elif page == 'Dashboard':
     st.title('Dashboard')
@@ -90,6 +89,7 @@ elif page == 'Dashboard':
             st.metric('Avg Trust Score', f"{df['trust_score'].mean():.2f}")
         with col3:
             st.metric('Fake Reviews', df['is_fake'].sum())
+        
         fig, axes = plt.subplots(2, 2, figsize=(12, 8))
         df['sentiment'].value_counts().plot(kind='bar', ax=axes[0, 0])
         axes[0, 0].set_title('Sentiment Distribution')
@@ -114,5 +114,5 @@ elif page == 'Detailed Analysis':
 
 elif page == 'About':
     st.title('About Trust Guard AI')
-    st.write('AI system for analyzing customer reviews using NLP')
+    st.write('AI system for analyzing customer reviews using Natural Language Processing')
     st.write('Built for Saveetha AI Institution')
