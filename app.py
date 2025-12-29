@@ -75,15 +75,13 @@ def calculate_trust_score(fake_score, sentiment, is_fake):
 
 def analyze_reviews(df, text_col, rating_col):
     result_df = df.copy()
-    result_df['review_text'] = result_df[text_col]
-    result_df['rating'] = result_df[rating_col]
-    result_df['cleaned_text'] = result_df['review_text'].apply(preprocess_text)
-    result_df['polarity'] = result_df['review_text'].apply(lambda x: TextBlob(str(x)).sentiment.polarity)
-    result_df['subjectivity'] = result_df['review_text'].apply(lambda x: TextBlob(str(x)).sentiment.subjectivity)
+    result_df['cleaned_text'] = result_df[text_col].apply(preprocess_text)
+    result_df['polarity'] = result_df[text_col].apply(lambda x: TextBlob(str(x)).sentiment.polarity)
+    result_df['subjectivity'] = result_df[text_col].apply(lambda x: TextBlob(str(x)).sentiment.subjectivity)
     result_df['sentiment'] = result_df['polarity'].apply(get_sentiment_label)
     
     result_df['fake_score'] = result_df.apply(
-        lambda row: detect_fake_review(row['cleaned_text'], row['polarity'], row['subjectivity'], row['rating'], row['sentiment']),
+        lambda row: detect_fake_review(row['cleaned_text'], row['polarity'], row['subjectivity'], row[rating_col], row['sentiment']),
         axis=1
     )
     result_df['is_fake'] = result_df['fake_score'] >= 0.5
@@ -115,7 +113,7 @@ elif page == 'Upload & Analyze':
             df = analyze_reviews(df, text_col, rating_col)
             st.session_state.uploaded_data = df
             st.success('Analysis complete!')
-            st.dataframe(df[['review_text', 'rating', 'sentiment', 'trust_score']])
+            st.dataframe(df[[text_col, rating_col, 'sentiment', 'trust_score']])
         except Exception as e:
             st.error(f'Error: {str(e)}')
 
