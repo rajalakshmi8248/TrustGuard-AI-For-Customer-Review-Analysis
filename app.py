@@ -11,6 +11,30 @@ st.set_page_config(page_title='Trust Guard AI', layout='wide')
 if 'uploaded_data' not in st.session_state:
     st.session_state.uploaded_data = None
 
+def get_text_column(df):
+    """Find text column - tries common names"""
+    text_cols = ['review_text', 'review', 'text', 'comment', 'feedback', 'description']
+    for col in text_cols:
+        if col in df.columns:
+            return col
+    # If no common name found, return first text column
+    for col in df.columns:
+        if df[col].dtype == 'object' and col != 'rating':
+            return col
+    raise ValueError('No text column found')
+
+def get_rating_column(df):
+    """Find rating column - tries common names"""
+    rating_cols = ['rating', 'rate', 'score', 'stars']
+    for col in rating_cols:
+        if col in df.columns:
+            return col
+    # If no common name found, return first numeric column
+    for col in df.columns:
+        if df[col].dtype in ['int64', 'float64']:
+            return col
+    raise ValueError('No rating column found')
+
 def preprocess_text(text):
     text = str(text).lower()
     text = re.sub(r'[^a-zA-Z0-9\s]', '', text)
@@ -49,8 +73,10 @@ def calculate_trust_score(fake_score, sentiment, is_fake):
         trust_score += 15
     return max(0, min(trust_score, 100))
 
-def analyze_reviews(df):
+def analyze_reviews(df, text_col, rating_col):
     result_df = df.copy()
+    result_df['review_text'] = result_df[text_col]
+    result_df['rating'] = result_df[rating_col]
     result_df['cleaned_text'] = result_df['review_text'].apply(preprocess_text)
     result_df['polarity'] = result_df['review_text'].apply(lambda x: TextBlob(str(x)).sentiment.polarity)
     result_df['subjectivity'] = result_df['review_text'].apply(lambda x: TextBlob(str(x)).sentiment.subjectivity)
@@ -81,8 +107,11 @@ elif page == 'Upload & Analyze':
     if uploaded_file:
         try:
             df = pd.read_csv(uploaded_file)
+            text_col = get_text_column(df)
+            rating_col = get_rating_column(df)
+            st.write(f'Found text column: {text_col}, rating column: {rating_col}')
             st.write(f'Loaded {len(df)} reviews')
-            df = analyze_reviews(df)
+            df = analyze_reviews(df, text_col, rating_col)
             st.session_state.uploaded_data = df
             st.success('Analysis complete!')
             st.dataframe(df[['review_text', 'rating', 'sentiment', 'trust_score']])
@@ -100,7 +129,6 @@ elif page == 'Dashboard':
             st.metric('Avg Trust Score', f"{df['trust_score'].mean():.2f}")
         with col3:
             st.metric('Fake Reviews', df['is_fake'].sum())
-        
         try:
             fig, axes = plt.subplots(2, 2, figsize=(12, 8))
             df['sentiment'].value_counts().plot(kind='bar', ax=axes[0, 0])
