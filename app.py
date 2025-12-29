@@ -12,27 +12,60 @@ if 'uploaded_data' not in st.session_state:
     st.session_state.uploaded_data = None
 
 def get_text_column(df):
-    """Find text column - tries common names"""
-    text_cols = ['review', 'text', 'review_text', 'comment', 'feedback', 'description', 'body']
-    for col in text_cols:
-        if col in df.columns:
+    """Find text column - tries common names with case-insensitive matching"""
+    text_cols = ['review', 'text', 'review_text', 'comment', 'feedback', 'description', 'body', 'message']
+    cols_lower = {col.lower(): col for col in df.columns}
+    
+    # First try exact matches (case-insensitive)
+    for text_col in text_cols:
+        if text_col in cols_lower:
+            return cols_lower[text_col]
+    
+    # Then try partial matches for 'review' or 'text' in column names
+    for col in df.columns:
+        col_lower = col.lower()
+        if 'review' in col_lower and df[col].dtype == 'object':
             return col
+    
+    # Try 'text' in column names
+    for col in df.columns:
+        col_lower = col.lower()
+        if 'text' in col_lower and df[col].dtype == 'object':
+            return col
+    
     # If no common name found, return first text column
     for col in df.columns:
-        if df[col].dtype == 'object' and col.lower() not in ['rating', 'rate', 'score']:
+        if df[col].dtype == 'object' and col.lower() not in ['rating', 'rate', 'score', 'name', 'user']:
             return col
+    
     raise ValueError(f'No text column found. Columns: {list(df.columns)}')
 
 def get_rating_column(df):
-    """Find rating column - tries common names"""
-    rating_cols = ['rating', 'rate', 'score', 'stars']
-    for col in rating_cols:
-        if col in df.columns:
+    """Find rating column - tries common names with case-insensitive matching"""
+    rating_cols = ['rating', 'rate', 'score', 'stars', 'overall']
+    cols_lower = {col.lower(): col for col in df.columns}
+    
+    # First try exact matches (case-insensitive)
+    for rating_col in rating_cols:
+        if rating_col in cols_lower:
+            return cols_lower[rating_col]
+    
+    # Then try partial matches
+    for col in df.columns:
+        col_lower = col.lower()
+        if 'rating' in col_lower and df[col].dtype in ['int64', 'float64']:
             return col
+    
+    for col in df.columns:
+        col_lower = col.lower()
+        if 'overall' in col_lower and df[col].dtype in ['int64', 'float64']:
+            return col
+    
     # If no common name found, return first numeric column
     for col in df.columns:
         if df[col].dtype in ['int64', 'float64']:
             return col
+    
     raise ValueError(f'No rating column found. Columns: {list(df.columns)}')
 
 def preprocess_text(text):
@@ -112,6 +145,8 @@ elif page == 'Upload & Analyze':
             st.write(f'Loaded {len(df)} reviews')
             df = analyze_reviews(df, text_col, rating_col)
             st.session_state.uploaded_data = df
+            st.session_state.text_col = text_col
+            st.session_state.rating_col = rating_col
             st.success('Analysis complete!')
             st.dataframe(df[[text_col, rating_col, 'sentiment', 'trust_score']])
         except Exception as e:
@@ -121,6 +156,7 @@ elif page == 'Dashboard':
     st.title('Dashboard')
     if st.session_state.uploaded_data is not None:
         df = st.session_state.uploaded_data
+        rating_col = st.session_state.get('rating_col', 'rating')
         col1, col2, col3 = st.columns(3)
         with col1:
             st.metric('Total Reviews', len(df))
@@ -134,8 +170,8 @@ elif page == 'Dashboard':
             axes[0, 0].set_title('Sentiment Distribution')
             axes[0, 1].hist(df['trust_score'], bins=10)
             axes[0, 1].set_title('Trust Score Distribution')
-            axes[1, 0].scatter(df['rating'], df['trust_score'])
-            axes[1, 0].set_title('Rating vs Trust Score')
+            axes[1, 0].scatter(df[rating_col], df['trust_score'])
+            axes[1, 0].set_title(f'{rating_col} vs Trust Score')
             axes[1, 1].hist(df['polarity'], bins=20)
             axes[1, 1].set_title('Polarity Distribution')
             plt.tight_layout()
